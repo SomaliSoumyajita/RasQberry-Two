@@ -2,6 +2,8 @@
 # Define the global variables
 export REPO=RasQberry-Two 
 export STD_VENV=RQB2
+BOOKMARK_DIR="/home/${CURRENT_USER}/.config/chromium/Default"
+BOOKMARK_FILE="${BOOKMARK_DIR}/Bookmarks"
 #echo $HOME
 
 if [ -d "$HOME/$REPO/venv/$STD_VENV" ]; then
@@ -16,6 +18,31 @@ if [ -d "$HOME/$REPO/venv/$STD_VENV" ]; then
     # echo "Ownership of $FOLDER_PATH changed to $CURRENT_USER."
   fi
 
+# Ensure Chromium profile directory exists
+mkdir -p "${BOOKMARK_DIR}"
+
+# Add bookmarks JSON structure
+cat <<EOF > "${BOOKMARK_FILE}"
+{
+    "roots": {
+        "bookmark_bar": {
+            "composer": [
+                {
+                    "name": "IBM Quantum Circuit Composer",
+                    "type": "url",
+                    "url": "https://quantum.ibm.com/composer/files/new"
+                }
+            ]
+        }
+    }
+}
+EOF
+
+  if [ $(stat -c '%U' "$BOOKMARK_DIR") == "root" ]; then
+    # Change the ownership to the logged-in user
+    sudo chown -R "$CURRENT_USER":"$CURRENT_USER" "$BOOKMARK_DIR" 
+    # echo "Ownership of $BOOKMARK_DIR changed to $CURRENT_USER."
+  fi
 
   source $HOME/$REPO/venv/$STD_VENV/bin/activate
   if ! pip show qiskit > /dev/null 2>&1; then
