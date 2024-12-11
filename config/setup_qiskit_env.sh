@@ -3,7 +3,8 @@
 export REPO=RasQberry-Two 
 export STD_VENV=RQB2
 #echo $HOME
-
+#install jq
+sudo apt install jq
 # Function to add a bookmark to Chromium
 add_bookmark() {
   local bookmark_file="$HOME/.config/chromium/Default/Bookmarks"
