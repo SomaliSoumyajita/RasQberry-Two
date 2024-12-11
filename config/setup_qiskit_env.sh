@@ -2,9 +2,35 @@
 # Define the global variables
 export REPO=RasQberry-Two 
 export STD_VENV=RQB2
-BOOKMARK_DIR="/home/${CURRENT_USER}/.config/chromium/Default"
-BOOKMARK_FILE="${BOOKMARK_DIR}/Bookmarks"
 #echo $HOME
+
+# Function to add a bookmark to Chromium
+add_bookmark() {
+  local bookmark_file="$HOME/.config/chromium/Default/Bookmarks"
+  local new_bookmark='{"date_added":"16855787430000000","id":1001,"name":"IBM Quantum Circuit Composer","type":"url","url":"https://quantum.ibm.com/composer/files/new"}'
+  local bookmark_url="https://quantum.ibm.com/composer/files/new"
+
+  # Check if the bookmarks file exists
+  if [ -f "$bookmark_file" ]; then
+    # Check if the bookmark already exists
+    if jq --arg url "$bookmark_url" '.roots.bookmark_bar.children[]? | select(.url == $url)' "$bookmark_file" | grep -q "$bookmark_url"; then
+      #echo "Bookmark already exists. Skipping addition."
+      return
+    fi
+    # Backup the original bookmarks file
+    cp "$bookmark_file" "$bookmark_file.bak"
+    # Add the new bookmark (using jq for JSON parsing)
+    jq --argjson new_bookmark "$new_bookmark" '.roots.bookmark_bar.children += [$new_bookmark]' "$bookmark_file" > "$bookmark_file.tmp"
+    # Replace the original bookmarks file with the updated version
+    mv "$bookmark_file.tmp" "$bookmark_file"
+    #echo "Bookmark added successfully."
+  else
+    echo "Bookmarks file not found."
+  fi
+}
+
+# Call the function to add a bookmark
+add_bookmark
 
 if [ -d "$HOME/$REPO/venv/$STD_VENV" ]; then
   # echo "Virtual Env Exists"
@@ -16,32 +42,6 @@ if [ -d "$HOME/$REPO/venv/$STD_VENV" ]; then
     # Change the ownership to the logged-in user
     sudo chown -R "$CURRENT_USER":"$CURRENT_USER" "$FOLDER_PATH" "$HOME"/.*
     # echo "Ownership of $FOLDER_PATH changed to $CURRENT_USER."
-  fi
-
-# Ensure Chromium profile directory exists
-mkdir -p "${BOOKMARK_DIR}"
-
-# Add bookmarks JSON structure
-cat <<EOF > "${BOOKMARK_FILE}"
-{
-    "roots": {
-        "bookmark_bar": {
-            "composer": [
-                {
-                    "name": "IBM Quantum Circuit Composer",
-                    "type": "url",
-                    "url": "https://quantum.ibm.com/composer/files/new"
-                }
-            ]
-        }
-    }
-}
-EOF
-
-  if [ $(stat -c '%U' "$BOOKMARK_DIR") == "root" ]; then
-    # Change the ownership to the logged-in user
-    sudo chown -R "$CURRENT_USER":"$CURRENT_USER" "$BOOKMARK_DIR" 
-    # echo "Ownership of $BOOKMARK_DIR changed to $CURRENT_USER."
   fi
 
   source $HOME/$REPO/venv/$STD_VENV/bin/activate
