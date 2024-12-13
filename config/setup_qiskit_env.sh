@@ -11,6 +11,8 @@ add_bookmark() {
   local new_bookmark='{"date_added":"16855787430000000","id":1001,"name":"IBM Quantum Circuit Composer","type":"url","url":"https://quantum.ibm.com/composer/files/new"}'
   local bookmark_url="https://quantum.ibm.com/composer/files/new"
 
+  mkdir -p "$bookmark_file"
+  
   # Check if the bookmarks file exists
   if [ -f "$bookmark_file" ]; then
     # Check if the bookmark already exists
