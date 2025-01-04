@@ -8,10 +8,23 @@ sudo apt install jq
 # Function to add a bookmark to Chromium
 add_bookmark() {
   local bookmark_file="$HOME/.config/chromium/Default/Bookmarks"
-  local new_bookmark='{"date_added":"16855787430000000","id":1001,"name":"IBM Quantum Circuit Composer","type":"url","url":"https://quantum.ibm.com/composer/files/new"}'
+  local new_bookmark=$(jq -n \
+     --arg date_added "16855787430000000" \
+     --arg id "1001" \
+     --arg name "IBM Quantum Circuit Composer" \
+     --arg type "url" \
+     --arg url "https://quantum.ibm.com/composer/files/new" \
+     '{
+        date_added: $date_added,
+        id: ($id | tonumber),
+        name: $name,
+        type: $type,
+        url: $url
+  }')
+  #local new_bookmark='{"date_added":"16855787430000000","id":1001,"name":"IBM Quantum Circuit Composer","type":"url","url":"https://quantum.ibm.com/composer/files/new"}'
   local bookmark_url="https://quantum.ibm.com/composer/files/new"
 
-  mkdir -p "$bookmark_file"
+  mkdir -p "$(dirname "$bookmark_file")"
   
   # Check if the bookmarks file exists
   if [ -f "$bookmark_file" ]; then
@@ -29,6 +42,7 @@ add_bookmark() {
     #echo "Bookmark added successfully."
   else
     echo "Bookmarks file not found."
+    echo "$new_bookmark"> "$bookmark_file"
   fi
 }
 
